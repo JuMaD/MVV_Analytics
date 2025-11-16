@@ -18,12 +18,29 @@ Interactive web application that visualizes how far you can travel on Munich's p
 
 ## Screenshots
 
-The application features:
+### Main Interface
+![Munich Transit Reachability Map - Main Interface](docs/screenshots/main-interface.png)
+
+*Interactive map showing Munich transit stops with controls panel on the left*
+
+### Reachability Visualization
+![Reachability Visualization](docs/screenshots/reachability-visualization.png)
+
+*Color-coded stops showing 30-minute reachability from Marienplatz (0-15min: green, 15-30min: light green, origin: blue)*
+
+### Animation Controls
+![Animation Controls](docs/screenshots/animation-controls.png)
+
+*Timeline animation with play/pause/stop controls and progress bar*
+
+### Key Features
 - Searchable stop selector with autocomplete
 - Interactive Leaflet map with all ~4,000 Munich transit stops
 - Color-coded visualization (green → yellow → orange by travel time)
 - Animation controls with progress bar and time display
 - Responsive design suitable for desktop and tablet
+
+> **Note**: To add screenshots, run the application and capture images, then save them to `docs/screenshots/` directory.
 
 ## Architecture
 

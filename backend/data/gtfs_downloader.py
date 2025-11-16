@@ -11,7 +11,13 @@ from pathlib import Path
 from typing import Dict, Optional
 
 import requests
-from google.cloud import storage
+
+try:
+    from google.cloud import storage
+    GCS_AVAILABLE = True
+except ImportError:
+    GCS_AVAILABLE = False
+    storage = None
 
 from backend.config import settings
 
@@ -26,11 +32,11 @@ class GTFSDownloader:
         Args:
             use_gcs: If True, use Google Cloud Storage. If False, use local storage.
         """
-        self.use_gcs = use_gcs
+        self.use_gcs = use_gcs and GCS_AVAILABLE
         self.gcs_client = None
         self.bucket = None
 
-        if use_gcs and settings.GCS_BUCKET_NAME:
+        if self.use_gcs and settings.GCS_BUCKET_NAME and storage:
             self.gcs_client = storage.Client(project=settings.GCP_PROJECT_ID)
             self.bucket = self.gcs_client.bucket(settings.GCS_BUCKET_NAME)
 
