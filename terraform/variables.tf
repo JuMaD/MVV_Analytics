@@ -58,3 +58,9 @@ variable "update_schedule" {
   type        = string
   default     = "0 6 * * *"
 }
+
+variable "enable_scheduler" {
+  description = "Enable automatic GTFS updates via Cloud Scheduler (set to false for manual-only updates)"
+  type        = bool
+  default     = true
+}

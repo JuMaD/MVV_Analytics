@@ -16,4 +16,7 @@ admin_token = "your-secure-admin-token-here"
 # cloud_run_cpu = "2"
 # cloud_run_max_instances = 10
 # cloud_run_min_instances = 0
-# update_schedule = "0 6 * * *"  # Daily at 6 AM CET
+
+# Optional: Automatic updates configuration
+# enable_scheduler = true          # Set to false for manual-only updates
+# update_schedule = "0 6 * * *"    # Daily at 6 AM CET (if scheduler enabled)

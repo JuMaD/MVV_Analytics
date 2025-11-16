@@ -186,24 +186,30 @@ resource "google_cloud_run_service_iam_member" "public_access" {
   member   = "allUsers"
 }
 
-# Service account for Cloud Scheduler
+# Service account for Cloud Scheduler (only if enabled)
 resource "google_service_account" "scheduler" {
+  count = var.enable_scheduler ? 1 : 0
+
   account_id   = "${var.app_name}-scheduler-sa"
   display_name = "Service Account for Munich Transit Map Cloud Scheduler"
 
   depends_on = [google_project_service.apis]
 }
 
-# Grant scheduler permission to invoke Cloud Run
+# Grant scheduler permission to invoke Cloud Run (only if enabled)
 resource "google_cloud_run_service_iam_member" "scheduler_invoker" {
+  count = var.enable_scheduler ? 1 : 0
+
   service  = google_cloud_run_service.app.name
   location = google_cloud_run_service.app.location
   role     = "roles/run.invoker"
-  member   = "serviceAccount:${google_service_account.scheduler.email}"
+  member   = "serviceAccount:${google_service_account.scheduler[0].email}"
 }
 
-# Cloud Scheduler job for daily GTFS updates
+# Cloud Scheduler job for daily GTFS updates (only if enabled)
 resource "google_cloud_scheduler_job" "gtfs_update" {
+  count = var.enable_scheduler ? 1 : 0
+
   name             = "${var.app_name}-update"
   description      = "Daily GTFS data update check"
   schedule         = var.update_schedule
@@ -221,7 +227,7 @@ resource "google_cloud_scheduler_job" "gtfs_update" {
     }
 
     oidc_token {
-      service_account_email = google_service_account.scheduler.email
+      service_account_email = google_service_account.scheduler[0].email
     }
   }
 
