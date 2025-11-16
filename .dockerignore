@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Data
+static/data/*.zip
+static/data/gtfs/
+*.pickle
+*.pkl
+
+# GCP
+.gcp/
+*.json
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Documentation
+*.md
+LICENSE
+
+# Tests
+tests/
+pytest.ini
+.pytest_cache/
+
+# Environment
+.env
+.env.local

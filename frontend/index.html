@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Munich Transit Reachability Map</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: #1976d2;
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            font-weight: 500;
+        }
+
+        header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-top: 0.25rem;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        #controls {
+            width: 350px;
+            background: white;
+            padding: 1.5rem;
+            overflow-y: auto;
+            box-shadow: 2px 0 4px rgba(0,0,0,0.1);
+        }
+
+        #map {
+            flex: 1;
+        }
+
+        .control-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .control-group label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .control-group input,
+        .control-group select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .control-group input[type="range"] {
+            padding: 0;
+        }
+
+        .slider-value {
+            display: inline-block;
+            margin-left: 0.5rem;
+            color: #1976d2;
+            font-weight: 500;
+        }
+
+        button {
+            background: #1976d2;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 0.5rem;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #1565c0;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        button.secondary {
+            background: #757575;
+        }
+
+        button.secondary:hover {
+            background: #616161;
+        }
+
+        #animation-controls {
+            display: none;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f5f5f5;
+            border-radius: 4px;
+        }
+
+        #animation-controls.visible {
+            display: block;
+        }
+
+        .animation-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .animation-buttons button {
+            flex: 1;
+            margin-bottom: 0;
+            padding: 0.5rem;
+        }
+
+        #time-display {
+            text-align: center;
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: #1976d2;
+            margin-bottom: 0.75rem;
+        }
+
+        #progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background: #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        #progress-bar {
+            height: 100%;
+            background: #1976d2;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        #legend {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f5f5f5;
+            border-radius: 4px;
+        }
+
+        #legend h3 {
+            font-size: 0.9rem;
+            margin-bottom: 0.75rem;
+            color: #333;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 0.75rem;
+            border: 2px solid #333;
+        }
+
+        .legend-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        #loading {
+            text-align: center;
+            padding: 1rem;
+            color: #666;
+            display: none;
+        }
+
+        #loading.visible {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #1976d2;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        footer {
+            background: #333;
+            color: white;
+            padding: 1rem 2rem;
+            font-size: 0.85rem;
+        }
+
+        footer a {
+            color: #64b5f6;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .error.visible {
+            display: block;
+        }
+
+        /* Leaflet marker styles */
+        .origin-marker {
+            background-color: #2196f3;
+            border: 3px solid white;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .stop-marker {
+            border: 2px solid #333;
+            border-radius: 50%;
+            width: 10px;
+            height: 10px;
+        }
+
+        /* Autocomplete styles */
+        #stop-search-container {
+            position: relative;
+        }
+
+        #stop-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            max-height: 200px;
+            overflow-y: auto;
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            z-index: 1000;
+            display: none;
+        }
+
+        #stop-suggestions.visible {
+            display: block;
+        }
+
+        .suggestion-item {
+            padding: 0.5rem;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+
+        .suggestion-item:hover {
+            background: #f5f5f5;
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Munich Transit Reachability Map</h1>
+        <p>Visualize how far you can travel on public transit within a time limit</p>
+    </header>
+
+    <main>
+        <div id="controls">
+            <div id="error" class="error"></div>
+
+            <div class="control-group">
+                <label for="stop-search">Select Starting Stop</label>
+                <div id="stop-search-container">
+                    <input type="text" id="stop-search" placeholder="Search for a stop or click on map...">
+                    <div id="stop-suggestions"></div>
+                </div>
+                <small style="color: #666; display: block; margin-top: 0.25rem;">
+                    Selected: <span id="selected-stop">None</span>
+                </small>
+            </div>
+
+            <div class="control-group">
+                <label for="max-time">
+                    Maximum Travel Time
+                    <span class="slider-value" id="max-time-value">30 minutes</span>
+                </label>
+                <input type="range" id="max-time" min="15" max="60" step="15" value="30">
+            </div>
+
+            <div class="control-group">
+                <label for="departure-time">Departure Time</label>
+                <input type="time" id="departure-time" value="09:00">
+            </div>
+
+            <div class="control-group">
+                <label for="day-type">Day Type</label>
+                <select id="day-type">
+                    <option value="weekday" selected>Weekday</option>
+                    <option value="saturday">Saturday</option>
+                    <option value="sunday">Sunday</option>
+                </select>
+            </div>
+
+            <button id="calculate-btn">Calculate Reachability</button>
+
+            <div id="loading">
+                <div class="spinner"></div>
+                <p>Calculating reachability...</p>
+            </div>
+
+            <div id="animation-controls">
+                <div id="time-display">0 minutes</div>
+                <div id="progress-bar-container">
+                    <div id="progress-bar"></div>
+                </div>
+                <div class="animation-buttons">
+                    <button id="play-btn">▶ Play</button>
+                    <button id="pause-btn" class="secondary">⏸ Pause</button>
+                    <button id="stop-btn" class="secondary">⏹ Stop</button>
+                </div>
+            </div>
+
+            <div id="legend">
+                <h3>Travel Time Legend</h3>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #2e7d32;"></div>
+                    <div class="legend-label">0-15 minutes</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #66bb6a;"></div>
+                    <div class="legend-label">15-30 minutes</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #ffeb3b;"></div>
+                    <div class="legend-label">30-45 minutes</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #ff9800;"></div>
+                    <div class="legend-label">45-60 minutes</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #2196f3;"></div>
+                    <div class="legend-label">Origin</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="map"></div>
+    </main>
+
+    <footer>
+        <div>
+            <strong>Data Source:</strong> <span id="data-source">Münchner Verkehrs- und Tarifverbund GmbH (MVV)</span><br>
+            <strong>Retrieved:</strong> <span id="download-date">-</span><br>
+            <strong>Feed Version:</strong> <span id="feed-version">-</span>
+        </div>
+        <div style="margin-top: 0.5rem;">
+            <a href="https://www.mvv-muenchen.de/fahrplanauskunft/fuer-entwickler/opendata/index.html" target="_blank">
+                MVV Open Data Information
+            </a>
+        </div>
+    </footer>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
