@@ -117,7 +117,8 @@ resource "google_cloud_run_service" "app" {
       service_account_name = google_service_account.cloud_run.email
 
       containers {
-        image = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.docker.repository_id}/${var.app_name}:latest"
+        # Use a placeholder image on first deployment, then update with deploy.sh
+        image = var.initial_image != "" ? var.initial_image : "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.docker.repository_id}/${var.app_name}:latest"
 
         resources {
           limits = {

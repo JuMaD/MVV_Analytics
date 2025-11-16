@@ -64,3 +64,9 @@ variable "enable_scheduler" {
   type        = bool
   default     = true
 }
+
+variable "initial_image" {
+  description = "Initial placeholder image for first deployment (use empty string to skip)"
+  type        = string
+  default     = "gcr.io/cloudrun/hello"
+}
