@@ -152,67 +152,60 @@ Note: You still need to initialize data first (run `scripts/init_data.py` before
 
 ## Google Cloud Deployment
 
+### 🚀 Quick Start (One Command)
+
+```bash
+./scripts/setup.sh
+```
+
+That's it! The script will:
+1. Check prerequisites (gcloud, terraform, docker)
+2. Authenticate with GCP
+3. Create all infrastructure using Terraform
+4. Build and deploy the Docker image
+5. Initialize GTFS data
+6. Provide you with the live application URL
+
+**Total time**: ~10-15 minutes
+
 ### Prerequisites
 
 - Google Cloud Project with billing enabled
-- `gcloud` CLI installed and authenticated
-- Project ID
+- [gcloud CLI](https://cloud.google.com/sdk/docs/install) installed
+- [Terraform](https://www.terraform.io/downloads) installed (v1.0+)
+- [Docker](https://docs.docker.com/get-docker/) installed
 
-### Automated Setup
+### What Gets Created
 
+The Terraform configuration automatically creates:
+
+- ✅ **Cloud Run service** - Auto-scaling web application
+- ✅ **Cloud Storage buckets** - GTFS data and graph storage
+- ✅ **Cloud Scheduler job** - Daily GTFS updates at 6 AM CET
+- ✅ **Artifact Registry** - Docker image repository
+- ✅ **Service Accounts** - With appropriate IAM permissions
+- ✅ **Public HTTPS endpoint** - Your application URL
+
+**See [DEPLOYMENT.md](docs/DEPLOYMENT.md) for detailed deployment guide, manual setup, troubleshooting, and more.**
+
+### Updating the Application
+
+Deploy code changes:
 ```bash
-cd .gcp
-./setup-gcp.sh YOUR_PROJECT_ID
+./scripts/deploy.sh
 ```
 
-This script will:
-1. Enable required APIs (Cloud Build, Cloud Run, Cloud Scheduler, Cloud Storage)
-2. Create Cloud Storage bucket for GTFS data
-3. Build and deploy Docker image to Cloud Run
-4. Create Cloud Scheduler job for daily updates at 6 AM CET
-
-### Manual Setup
-
-#### 1. Create Storage Bucket
-
+Update infrastructure:
 ```bash
-gsutil mb -p YOUR_PROJECT_ID -c STANDARD -l europe-west3 gs://munich-transit-data-YOUR_PROJECT_ID/
+cd terraform
+terraform apply
 ```
 
-#### 2. Build and Deploy
+### Teardown
 
+Remove all GCP resources:
 ```bash
-gcloud builds submit --config=.gcp/cloudbuild.yaml
-```
-
-#### 3. Set Environment Variables
-
-```bash
-gcloud run services update munich-transit-map \
-  --region=europe-west3 \
-  --set-env-vars=GCP_PROJECT_ID=YOUR_PROJECT_ID,GCS_BUCKET_NAME=munich-transit-data-YOUR_PROJECT_ID,ADMIN_TOKEN=your-secure-token
-```
-
-#### 4. Initialize Data
-
-Call the update endpoint manually to download initial data:
-
-```bash
-curl -X POST \
-  -H "Authorization: Bearer your-secure-token" \
-  https://YOUR_SERVICE_URL/api/admin/update-gtfs
-```
-
-#### 5. Create Scheduler Job
-
-```bash
-gcloud scheduler jobs create http munich-transit-update \
-  --location=europe-west3 \
-  --schedule="0 6 * * *" \
-  --uri="https://YOUR_SERVICE_URL/api/admin/update-gtfs" \
-  --http-method=POST \
-  --headers="Authorization=Bearer your-secure-token" \
-  --time-zone="Europe/Berlin"
+./scripts/teardown.sh  # WARNING: Deletes everything!
 ```
 
 ## API Documentation

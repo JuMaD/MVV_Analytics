@@ -1,0 +1,19 @@
+# Terraform Variables - Copy to terraform.tfvars and fill in your values
+
+# Your GCP Project ID (REQUIRED)
+project_id = "your-project-id-here"
+
+# GCP Region (default: europe-west3 = Frankfurt)
+region = "europe-west3"
+
+# Admin token for update endpoint (REQUIRED - generate a secure random string)
+# Example: openssl rand -base64 32
+admin_token = "your-secure-admin-token-here"
+
+# Optional: Customize application settings
+# app_name = "munich-transit-map"
+# cloud_run_memory = "2Gi"
+# cloud_run_cpu = "2"
+# cloud_run_max_instances = 10
+# cloud_run_min_instances = 0
+# update_schedule = "0 6 * * *"  # Daily at 6 AM CET
