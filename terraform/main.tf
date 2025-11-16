@@ -78,7 +78,7 @@ resource "google_storage_bucket" "graph_data" {
 
 # Service account for Cloud Run
 resource "google_service_account" "cloud_run" {
-  account_id   = "${var.app_name}-run-sa"
+  account_id   = "mtm-run-sa"
   display_name = "Service Account for Munich Transit Map Cloud Run"
 
   depends_on = [google_project_service.apis]
@@ -190,7 +190,7 @@ resource "google_cloud_run_service_iam_member" "public_access" {
 resource "google_service_account" "scheduler" {
   count = var.enable_scheduler ? 1 : 0
 
-  account_id   = "${var.app_name}-scheduler-sa"
+  account_id   = "mtm-scheduler-sa"
   display_name = "Service Account for Munich Transit Map Cloud Scheduler"
 
   depends_on = [google_project_service.apis]
